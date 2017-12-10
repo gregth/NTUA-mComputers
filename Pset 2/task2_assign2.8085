@@ -1,0 +1,44 @@
+		IN 10H
+		; Ορισμός Χρονοκαθυστέρησης στο ζεύγος BC
+		; 1/5 sec = 200ms = 00000000 11001000b
+		LXI B,00C8H
+	
+WAIT_FOR_ON:	LDA 2000H
+		ANI 80H		; Μάσκα για το MSB
+		CPI 80H		; Σύγκριση
+		JNZ WAIT_FOR_ON
+WAIT_FOR_OFF:	LDA 2000H		; Περίμενε για να γίνει OFF
+		ANI 80H
+		CPI 00H	
+		JNZ WAIT_FOR_OFF	; Αν δεν έχει γίνει OFF
+					
+LEDS_ON:	MVI A,00H		; ’ναψε τα LEDS
+		STA 3000H
+
+LOOP_RESET:	MVI E,00H		; E=0, Μετρητής		
+COUNT_TO_ON:	CALL DELB		; Μετράμε περιμένοντας να δούμε ένα ON
+		INR E			; E++
+		LDA 2000H
+		ANI 80H		; Μάσκα για το MSB
+		CPI 80H		; Σύγκριση 
+		JZ COUNT_TO_OFF	; Αν έγινε ON συνέχισε τη μέτρηση περιμένοντας για OFF		INR E			; D++
+		MOV A,E		; A=E
+		CPI 96H		; A == 150?
+		JZ LEDS_OFF		; Σβήσε τα φώτα, πέρασε ο χρόνος
+		JMP COUNT_TO_ON	; Συνέχισε τη μέτρηση
+
+COUNT_TO_OFF:	CALL DELB
+		INR E			; E++
+		LDA 2000H			
+		ANI 80H		; Μάσκα για MSB
+		CPI 00H		; Έγινε OFF;
+		JZ LOOP_RESET		; Αν έγινε OFF Reset τον μετρητή
+		MOV A,E		; A=E
+		CPI 96H		; A == 150?
+		JZ LEDS_OFF		; Σβήσε τα φώτα, πέρασε ο χρόνος
+		JMP COUNT_TO_OFF	; Συνέχισε τη μέτρηση 
+
+LEDS_OFF:	MVI A,FFH
+		STA 3000H
+		JMP WAIT_FOR_ON
+END

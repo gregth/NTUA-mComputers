@@ -1,0 +1,87 @@
+		;Ερώτημα 1
+		IN 10H
+		LXI H,0900H	; Φόρτωση αρχικής διεύθυνσης
+		MVI A,00H	; A=0
+LP_1:		MOV M,A	; [(H)(L)] = A
+		CPI FFH	; Συνθήκη A - 255
+		JZ END_LP1	; Αν Α = 255
+		INX H		; M++
+		INR A		; A++
+		JMP LP_1
+END_LP1:	
+		;Ερώτημα 2
+		LXI H,0900H	; Φόρτωση αρχικής διεύθυνσης
+		MVI E,FFH	; E = FFH = 255
+		MVI C,00H	; C = 0
+		MVI B,00H	; B = 0
+LOOP_3:			; Από 255 μέχρι και 0
+		MOV A,M	; A = [M]
+		MVI D,08H	; Loop eight times, για κάθε ψηφίο του 8bit αριθμού		
+LOOP_2:	RAL		; CY = MSB του τρέχοντος Α
+		JNC NEXT	; Αν CY == 0
+		INX B		; [(B)(C)]++
+NEXT:		DCR D		; D-- 
+		JNZ LOOP_2	; Αν D != 0 (Z=0), Ξανά loop
+END_LP2:	INX H		; Επόμενη διεύθυνση μνήμης
+		DCR E		; E--
+		MOV A,E	; A = E
+		CPI FFH	; Αν κάνει 0 - 1 γίνεται FF
+		JZ END_LP3	;
+		JMP LOOP_3
+END_LP3:	
+		;Ερώτημα 3
+		LXI H,0900H	; Φόρτωση αρχικής διεύθυνσης
+		MVI E,FFH	; E = FFH = 255
+		MVI D,00H	; D = 0
+LOOP_4:	MOV A,M	; Από 255 μέχρι και 0
+		
+		CPI 10H	; Α - 10H, CY=?
+		JC SKIP	; Αν CY = 1, δλδ. Α < 10H
+		CPI 60H	; A - 60H, CY=?, Z=0
+		JZ COUNT	; Αν A == 60H
+		JNC SKIP	; Αν Α > 60H
+COUNT:		INR D		; D++
+SKIP:		INX H		; Επόμενη διεύθυνση μνήμης
+		DCR E		; E--
+		MOV A,E	; A = E
+		CPI FFH	; Αν κάνει 0 - 1 γίνεται FF
+		JZ END_LP4	;
+		JMP LOOP_4
+END_LP4:	
+		; Ερώτημα 4
+READ_AGAIN:	LDA 2000H
+		MOV E,A	; Δημιουργώ αντίγραφο του Α
+		ANI 07H	; Μάσκα τρίτων τελευταίων ψηφίων
+		CPI 00H	; Αν κανένα από τα 3 τελευατία δεν είναι ON, σβήσε τα LEDS
+		JZ DISPLAY_OFF
+		
+		MOV A,E	
+		ANI 04H	; Μάσκα 3ου σημαντικού ψηφίου
+		CPI 04H	; Σύγκτιση με το 00000100
+		JZ DISPLAY_D	; Eμφάνιση του D
+
+		MOV A,E	
+		ANI 02H	; Μάσκα 2ου σημαντικού ψηφίου
+		CPI 02H	; Σύγκτιση με το 00000010
+		JZ DISPLAY_C	; Eμφάνιση του D
+		
+		MOV A,E	
+		ANI 01H	; Μάσκα 1ου σημαντικού ψηφίου
+		CPI 01H	; Σύγκτιση με το 00000001
+		JZ DISPLAY_B	; Eμφάνιση του B		
+DISPLAY_OFF:	MVI A,FFH	; Απενεργοποίηση όλων των LED
+		STA 3000H
+		JMP READ_AGAIN
+DISPLAY_B:	MOV A,B
+		CMA		; Αντιστροφή για αρνητική λογική LEDS
+		STA 3000H
+		JMP READ_AGAIN
+DISPLAY_C:	MOV A,C
+		CMA		; Αντιστροφή για αρνητική λογική LEDS
+		STA 3000H
+		JMP READ_AGAIN
+DISPLAY_D:	MOV A,D
+		CMA		; Αντιστροφή για αρνητική λογική LEDS
+		STA 3000H
+		JMP READ_AGAIN		
+END
