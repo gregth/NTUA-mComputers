@@ -1,0 +1,65 @@
+START:		LDA 2000H	; Διάβασμα θύρας εισόδου
+		LXI H,3000H	; Φόρτωση πόρτας εξόδου
+		
+		CPI 00H	; Αν όλα σβηστά
+		JZ TURN_OFF
+
+		MOV B,A	; Αποθήκευση του Α στον Β
+		ANI 01H	; Μάσκα ψηφίου 0
+		CPI 01H	; Σύγκριση
+		JZ TURN_ON_0
+		
+		MOV A,B
+		ANI 02H	; Μάσκα ψηφίου 1
+		CPI 02H
+		JZ TURN_ON_1
+		
+		MOV A,B
+		ANI 04H	; Μάσκα ψηφίου 2
+		CPI 04H
+		JZ TURN_ON_2
+
+		MOV A,B
+		ANI 08H	; Μάσκα ψηφίου 3
+		CPI 08H
+		JZ TURN_ON_3
+
+		MOV A,B
+		ANI 10H	; Μάσκα ψηφίου 4
+		CPI 10H
+		JZ TURN_ON_4
+
+		MOV A,B
+		ANI 20H	; Μάσκα ψηφίου 5
+		CPI 20H
+		JZ TURN_ON_5
+
+		MOV A,B
+		ANI 40H	; Μάσκα ψηφίου 6
+		CPI 40H
+		JZ TURN_ON_6	;
+
+		MOV A,B
+	    	ANI 80H	; Μάσκα ψηφίου MSB 7
+		CPI 80H
+		JZ TURN_ON_7
+		
+TURN_ON_0:	MVI M,00H	; ON των αντιστοίχων LEDS
+		JMP START
+TURN_ON_1:	MVI M,01H
+		JMP START
+TURN_ON_2:	MVI M,03H
+		JMP START
+TURN_ON_3:	MVI M,07H
+		JMP START
+TURN_ON_4:	MVI M,0FH
+		JMP START
+TURN_ON_5:	MVI M,1FH
+		JMP START
+TURN_ON_6:	MVI M,3FH
+		JMP START
+TURN_ON_7:	MVI M,7FH
+		JMP START
+TURN_OFF:	MVI M,FFH
+		JMP START
+END

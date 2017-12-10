@@ -1,0 +1,49 @@
+		LXI H,3000H	; Φόρτωση της διεύθυνσης εξόδου
+		MVI M,FFH	; Αρχική απενεργοποίηση LEDS
+START:		CALL KIND	; Κλήση ρουτίνας Key Input
+		
+
+		CPI 01H	; Κουμπί 1
+		JZ ON_1	; Ενεργοποίηση LED 1
+
+		CPI 02H	; Κουμπί 2
+		JZ ON_2	; Ενεργοποίηση LED 2
+
+		CPI 03H	; Κουμπί 3
+		JZ ON_3	; Ενεργοποίηση LED 3
+
+		CPI 04H	; Κουμπί 4
+		JZ ON_4	; Ενεργοποίηση LED 4
+
+
+		CPI 05H	; Κουμπί 5
+		JZ ON_5	; Ενεργοποίηση LED 5
+
+		CPI 06H	; Κουμπί 6
+		JZ ON_6	; Ενεργοποίηση LED 6
+	
+		CPI 07H	; Κουμπί 7
+		JZ ON_7	; Ενεργοποίηση LED 7		
+
+		CPI 08H	; Κουμπί 8
+		JZ ON_8	; Ενεργοποίηση LED 8
+		
+		JMP START
+
+ON_1:		MVI M,FEH
+		JMP START
+ON_2:		MVI M,FDH
+		JMP START
+ON_3:		MVI M,FBH
+		JMP START
+ON_4:		MVI M,F7H
+		JMP START
+ON_5:		MVI M,EFH
+		JMP START
+ON_6:		MVI M,DFH
+		JMP START
+ON_7:		MVI M,BFH
+		JMP START
+ON_8:		MVI M,7FH
+		JMP START
+END
