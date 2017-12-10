@@ -1,0 +1,104 @@
+		IN 10H
+		MVI A,0CH
+		SIM
+		EI
+		CALL INIT
+
+
+START:		CALL LIGHTS_OFF	; Απενεργοποίηση LEDS
+		JMP START
+
+
+
+INTR_ROUTINE:	; Ρουτίνα διακοπής, επαναφέρει στο 60
+		MVI B,06H 		; Δεκάδες Β = 6
+		MVI C,00H 		; Μονάδες C = 0
+		EI
+		CALL LIGHTS_ON
+		CALL COUNT
+		RET
+
+
+INIT:		; Aρχικοποίηση καταχωρητών και μνήμης
+		MVI A,00H
+   		LXI B,0000H
+  		LXI D,0A00H
+		LXI H,0A00H    	; Αρχική διεύθυνση segments
+		MVI M,10H		; Κενό σύμβολο στο segment
+   		INX H
+  		MVI M,10H
+		INX H
+		MVI M,10H
+		INX H
+		MVI M,10H
+		INX H
+		MVI M,10H
+		INX H
+		MVI M,10H
+		RET
+
+LIGHTS_OFF:	MVI A,FFH		; Ρουτίνα απενεργοποίησης LEDS
+		STA 3000H
+		RET
+
+LIGHTS_ON:	MVI A,00H
+		STA 3000H
+		RET
+
+DELAY_1S:	; Καθυστέρηση 1000*1ms = 1 sec
+		PUSH PSW
+		PUSH B
+		LXI B,03E7H	; B = 999
+
+DELAY_1mS:	; Καθυστέρηση 1ms
+		CALL DELA		; Σταθερή χρονοκαθυστέρηση 1ms
+		CALL DCD		; Εμφάνιση μέτρησης
+		DCX B
+		MOV A,B
+		CPI 00H		; Β == 0?
+		JNZ DELAY_1mS
+		MOV A,C
+		CPI 00H		; C == 0?
+		JNZ DELAY_1mS
+		POP B			; Αποκατάσταση καταχωρητών
+		POP PSW
+		RET
+
+DISPLAY:	LXI D,0A00H
+		LXI H,0A04H
+		MOV M,C	
+		INX H
+		MOV M,B
+
+		PUSH PSW
+		PUSH B
+		PUSH H
+		PUSH D
+		CALL STDM		; Μετακίνηση συμβόλων στη θέση μνήμης των segments
+		POP D
+		POP H
+		POP B
+		POP PSW
+		RET
+
+COUNT:		; Μέτρηση απο 60 έως 00
+REDUCE_B:	CALL DISPLAY
+		CALL DELAY_1S
+		DCR B			; Μείωση δεκάδων
+		MVI C,09H		; C = 9
+
+REDUCE_C:	CALL DISPLAY
+		CALL DELAY_1S
+		DCR C			; Μείωση μονάδων
+		MOV A,C
+		CPI 00H		; C = 0
+		JNZ REDUCE_C		; Αν C != 0, συνέχιστε τη μείωση του
+		
+		MOV A,B		
+		CPI 00H		; B = 0?
+		JNZ REDUCE_B
+		CALL DISPLAY		; Eμφάνιση τελικού 00
+		CALL DELAY_1S
+		JMP START
+		
+END

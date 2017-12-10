@@ -1,0 +1,89 @@
+		IN 10H
+		MVI A,0CH
+		SIM
+		EI
+		CALL INIT
+		
+		EQU LIM_B,0FH
+		EQU LIM_C,43H
+
+START:		LXI D,0A00H 
+		CALL STDM
+		CALL DCD
+JMP START
+
+INTR_ROUTINE:
+		EI
+		CALL DISPLAY
+		JMP START
+
+		
+DISPLAY:
+		MVI B,LIM_B		; Φόρτωση ορίων σταθερών
+		MVI C,LIM_C
+		CALL KIND		; Διάβασμα input
+		MOV E,A
+		LXI H,0A00H		; Tοποθέτηση περιεχομένου 2ου 7Segment
+		MOV M,A
+		CALL KIND
+		LXI H,0A01H		; Tοποθέτηση περιεχομένου 1ου 7Segment
+		MOV M,A
+		RLC			; Μετακίνηση 4 θέσεις αριστερά
+		RLC
+		RLC
+		RLC
+		ADD E			; Ενοποίηση αριιθμών
+		MOV E,A
+		
+		PUSH D			; Εμφάνιση αριθμών
+		LXI D,0A00H
+		PUSH PSW
+		PUSH D
+		PUSH B
+		PUSH H
+		CALL STDM
+		POP H
+		POP B
+		POP D
+		POP PSW
+		CALL DCD		
+		POP D
+
+		MOV A,E
+		INR B
+		CMP B		
+		JC INTERVAL_1		; A < B + 1 <=> Α <= Β
+		INR C		
+		CMP C
+		JC INTERVAL_2		; A < C + 1 <=> Α <= C
+
+INTERVAL_3:	MVI A,FEH		; Ενεργοποίηση 1ου LED απο δεξιά
+		STA 3000H
+		JMP START
+
+INTERVAL_2:	MVI A,FDH		; Ενεργοποίηση 2ου LED απο δεξιά
+		STA 3000H
+		JMP START
+
+INTERVAL_1:	MVI A,FBH		; Ενεργοποίηση 3ου LED απο δεξιά
+		STA 3000H
+		JMP START
+
+INIT:		; Aρχικοποίηση καταχωρητών και μνήμης
+		MVI A,00H
+   		LXI B,0000H
+  		LXI D,0A00H
+		LXI H,0A00H    	; Αρχική διεύθυνση segments
+		MVI M,10H		; Κενό σύμβολο στο segment
+   		INX H
+  		MVI M,10H
+		INX H
+		MVI M,10H
+		INX H
+		MVI M,10H
+		INX H
+		MVI M,10H
+		INX H
+		MVI M,10H
+		RET
+END
